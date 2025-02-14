@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yoga Schedule</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+  <!-- Cookie Consent CSS -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_sitekey }}"></script>
+  <script>
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + value + "; path=/" + expires;
+    }
+
+    function getCookie(name) {
+      let nameEQ = name + "=";
+      let ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    if (!getCookie('client_id')) {
+      setCookie('client_id', Math.random().toString(36).substring(2, 15), 365);
+    }
+  </script>
+  <style>
+    .session {
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+    .session-buttons button {
+      margin-right: 5px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4">Flowel-Studio Yoga Class Schedule</h1>
+
+    <!-- Группируем сессии по occurrence_date -->
+    {% for occ_date, sessions in schedule|groupby('occurrence_date') %}
+      <h3>{{ occ_date }} {% if sessions|length > 0 %} ({{ sessions[0].day }}){% endif %}</h3>
+      {% for session in sessions %}
+        <div class="session">
+          <strong>{{ session.time }}</strong>
+          &nbsp; <h5 style="display:inline; margin:0;">{{ session.title }}</h5> &nbsp; {{ session.duration }} min
+          <div class="session-buttons">
+            {% for slot in session.slots %}
+              {% if slot == 'You' %}
+                <button class="btn btn-warning unbook-btn" data-id="{{ session.booking_id }}">
+                  You (Cancel)
+                </button>
+              {% elif slot == 'Free' %}
+                <button class="btn btn-success book-btn" data-id="{{ session.id }}" data-date="{{ session.occurrence_date }}">
+                  Free
+                </button>
+              {% else %}
+                <button class="btn btn-secondary" disabled>Booked</button>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <!-- Booking Modal -->
+  <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="bookingModalLabel">Book a Class</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="bookingForm">
+            <input type="hidden" id="scheduleId">
+            <input type="hidden" id="bookingDate">
+            <input type="hidden" id="recaptchaToken">
+            <div class="mb-3">
+              <label for="name" class="form-label">Name</label>
+              <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="phone" class="form-label">Phone</label>
+              <input type="text" class="form-control" id="phone" required>
+            </div>
+            <!-- Чекбокс для согласия на обработку данных -->
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="consentCheckbox" required>
+              <label class="form-check-label" for="consentCheckbox">I give my consent for the processing of my personal data</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Book</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and custom scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Cookie Consent JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
+  <script>
+    window.addEventListener("load", function(){
+      window.cookieconsent.initialise({
+        "palette": {
+          "popup": {
+            "background": "#000"
+          },
+          "button": {
+            "background": "#f1d600"
+          }
+        },
+        "theme": "classic",
+        "content": {
+          "message": "We use cookies and process personal data to ensure you get the best experience on our website.",
+          "dismiss": "Got it!",
+          "link": "Learn more",
+          "href": "/privacy"  // Замените на URL вашей страницы с политикой конфиденциальности
+        }
+      })
+    });
+  </script>
+  <script>
+    document.querySelectorAll('.book-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        document.getElementById('scheduleId').value = button.dataset.id;
+        document.getElementById('bookingDate').value = button.dataset.date;
+        document.getElementById('name').value = getCookie('userName') || "";
+        document.getElementById('phone').value = getCookie('userPhone') || "";
+        new bootstrap.Modal(document.getElementById('bookingModal')).show();
+      });
+    });
+
+    document.getElementById('bookingForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      
+      // Проверяем, что чекбокс согласия отмечен
+      if (!document.getElementById('consentCheckbox').checked) {
+        alert("Please give your consent for the processing of your personal data.");
+        return;
+      }
+      
+      const submitButton = document.querySelector('#bookingForm button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.innerText = "Booking...";
+
+      grecaptcha.ready(function() {
+        grecaptcha.execute("{{ recaptcha_sitekey }}", { action: "submit" }).then(function(token) {
+          document.getElementById('recaptchaToken').value = token;
+
+          const scheduleId = document.getElementById('scheduleId').value;
+          const bookingDate = document.getElementById('bookingDate').value;
+          const name = document.getElementById('name').value;
+          const phone = document.getElementById('phone').value;
+          const recaptchaToken = token;
+          const clientId = getCookie('client_id');
+
+          setCookie('userName', name, 30);
+          setCookie('userPhone', phone, 30);
+
+          fetch('/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              schedule_id: scheduleId,
+              booking_date: bookingDate,
+              name: name,
+              phone: phone,
+              client_id: clientId,
+              recaptcha_token: recaptchaToken
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === "success") {
+              location.reload();
+            } else {
+              alert("Error: " + data.message);
+              submitButton.disabled = false;
+              submitButton.innerText = "Book";
+            }
+          })
+          .catch(error => {
+            console.error("Error during booking:", error);
+            alert("An unexpected error occurred. Please try again.");
+            submitButton.disabled = false;
+            submitButton.innerText = "Book";
+          });
+        });
+      });
+    });
+
+    document.querySelectorAll('.unbook-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const bookingId = button.dataset.id;
+        if (!bookingId) {
+          console.error("Booking ID not found!");
+          return;
+        }
+
+        fetch('/unbook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ booking_id: bookingId })
+        }).then(response => response.json()).then(data => {
+          if (data.status === "success") {
+            location.reload();
+          } else {
+            alert("Failed to cancel booking: " + data.message);
+          }
+        }).catch(error => {
+          console.error("Error canceling booking:", error);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

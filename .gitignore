@@ -1,0 +1,7 @@
+instance/yoga.db
+venv
+__pycache__
+.DS_Store
+.env
+GeoLite2-Country.mmdb
+.env
