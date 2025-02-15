@@ -30,9 +30,9 @@
               {{ session.time }}
               &nbsp;&nbsp; <strong>{{ session.title }}</strong> &nbsp;&nbsp; {{ session.duration }} min
               {% if session.bookings %}
-                <br>{{ session.bookings | join(', ') }}
+                <br>&nbsp;&nbsp; {{ session.bookings | join(', ') }}
               {% else %}
-                <br><em>No bookings</em>
+                <br>&nbsp;&nbsp; <em>No bookings</em>
               {% endif %}
             </div>
           {% endfor %}
