@@ -26,15 +26,15 @@
         <div class="booking-group">
           <h3>{{ date_str }} ({{ group.date_obj.strftime("%A") }})</h3>
           {% for session in group.sessions %}
-            <div class="booking-item">
-              {{ session.time }}
-              &nbsp;&nbsp; <strong>{{ session.title }}</strong> &nbsp;&nbsp; {{ session.duration }} min
-              {% if session.bookings %}
-                <br>&nbsp;&nbsp; {{ session.bookings | join(', ') }}
-              {% else %}
-                <br>&nbsp;&nbsp; <em>No bookings</em>
-              {% endif %}
-            </div>
+          <div class="booking-item">
+            {{ session.time }}
+            &nbsp;&nbsp; <strong>{{ session.title }}</strong> &nbsp;&nbsp; {{ session.duration }} min
+            {% if session.bookings %}
+              <span class="text-success">&nbsp;&nbsp; {{ session.bookings | join(', ') }}</span>
+            {% else %}
+              <span>&nbsp;&nbsp; <em>No bookings</em></span>
+            {% endif %}
+          </div>
           {% endfor %}
         </div>
       {% endfor %}
