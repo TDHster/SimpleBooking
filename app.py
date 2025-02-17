@@ -302,6 +302,62 @@ def admin_logout():
     return redirect(url_for('admin_login'))
 
 
+@app.route('/admin-schedule')
+def admin_schedule():
+    if not session.get('admin'):
+        return redirect(url_for('admin_login'))
+    schedule_items = Schedule.query.all()
+    day_order = {"Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6, "Sunday": 7}
+    # Сортируем по дню недели (согласно day_order) и затем по времени
+    schedule_items.sort(key=lambda item: (day_order.get(item.day, 99), item.time))
+    return render_template("admin_schedule.html", schedule_items=schedule_items)
+
+
+@app.route('/admin-schedule/add', methods=['POST'])
+def admin_schedule_add():
+    if not session.get('admin'):
+        return redirect(url_for('admin_login'))
+    day = request.form.get("day")
+    time = request.form.get("time")
+    title = request.form.get("title")
+    duration = request.form.get("duration")
+    max_slots = request.form.get("max_slots", 5)
+    # Простой контроль (можно добавить дополнительные проверки)
+    if not (day and time and title and duration):
+        return "Missing fields", 400
+    new_schedule = Schedule(day=day, time=time, title=title, duration=int(duration), max_slots=int(max_slots))
+    db.session.add(new_schedule)
+    db.session.commit()
+    return redirect(url_for("admin_schedule"))
+
+@app.route('/admin-schedule/edit/<int:schedule_id>', methods=['POST'])
+def admin_schedule_edit(schedule_id):
+    if not session.get('admin'):
+        return redirect(url_for('admin_login'))
+    schedule_obj = db.session.get(Schedule, schedule_id)
+    if not schedule_obj:
+        return "Schedule not found", 404
+    schedule_obj.day = request.form.get("day")
+    schedule_obj.time = request.form.get("time")
+    schedule_obj.title = request.form.get("title")
+    schedule_obj.duration = int(request.form.get("duration"))
+    schedule_obj.max_slots = int(request.form.get("max_slots", schedule_obj.max_slots))
+    db.session.commit()
+    return redirect(url_for("admin_schedule"))
+
+@app.route('/admin-schedule/delete/<int:schedule_id>', methods=['POST'])
+def admin_schedule_delete(schedule_id):
+    if not session.get('admin'):
+        return redirect(url_for('admin_login'))
+    schedule_obj = db.session.get(Schedule, schedule_id)
+    if not schedule_obj:
+        return "Schedule not found", 404
+    db.session.delete(schedule_obj)
+    db.session.commit()
+    return redirect(url_for("admin_schedule"))
+
+
+
 @app.route('/privacy')
 def privacy():
     return render_template('privacy.html')
