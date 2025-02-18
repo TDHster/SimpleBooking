@@ -17,6 +17,7 @@ Studio Booking System is a powerful and intuitive web application designed for f
 ## Key Features 🚀
 ✅ **Modern UI & UX** – Responsive and user-friendly interface built with Bootstrap 5 for smooth navigation.  
 ✅ **Admin Panel** – Manage schedules, add/edit sessions, and track bookings effortlessly.  
+✅ **Check bot** – Via Google capcha v3, no disturbing user.  
 ✅ **Secure Authentication** – Password protection with brute-force prevention (15-second delay on failed login attempts).  
 ✅ **IP-based Access Restrictions** – Limit access by country or city to enhance security and prevent unauthorized usage.  
 ✅ **User Data in Cookies** – Returning users can book faster thanks to auto-filled details stored in cookies.  
@@ -33,6 +34,9 @@ Studio Booking System is a powerful and intuitive web application designed for f
 - **Authentication:** Flask-Login, session-based auth
 
 ## How to Install & Run 🚀
+
+Need to get Google Capcha v3 key on google develop and store it to .env file.
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/studio-booking.git
@@ -47,5 +51,5 @@ pip install -r requirements.txt
 python app.py
 
 # Access the system at:
-http://localhost:5000
+http://localhost:5001
 ```
