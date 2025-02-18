@@ -5,6 +5,8 @@ from dotenv import dotenv_values
 from datetime import datetime, timedelta
 import uuid
 import geoip2.database
+from time import sleep
+
 
 config = dotenv_values(".env")
 GOOGLE_CAPCHAV3_SITEKEY = config["GOOGLE_CAPCHAV3_SITEKEY"]
@@ -250,6 +252,7 @@ def admin_login():
             session['admin'] = True
             return redirect(url_for('admin'))
         else:
+            sleep(15)
             error = "Invalid password"
             return render_template("admin_login.html", error=error)
     return render_template("admin_login.html")
