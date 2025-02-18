@@ -6,7 +6,9 @@ Studio Booking System is a powerful and intuitive web application designed for f
 ### User view
 <img width="593" alt="Снимок экрана 2025-02-18 в 14 52 38" src="https://github.com/user-attachments/assets/bd50ca81-5bc3-420a-8ff2-eefd4796dc6f" />
 <hr>
+
 ### Admin view
+
 <img width="605" alt="Снимок экрана 2025-02-18 в 14 52 54" src="https://github.com/user-attachments/assets/ccdcf23c-a792-4627-badc-7338ef2bb1dd" />
 
 <img width="791" alt="Снимок экрана 2025-02-18 в 14 53 13" src="https://github.com/user-attachments/assets/974cd06c-7175-4820-a015-1cc2c3b0f2a2" />
