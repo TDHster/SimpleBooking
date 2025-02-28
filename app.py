@@ -16,9 +16,11 @@ SCHEDULE_WEEKS_FORWARD = int(config.get("SCHEDULE_WEEKS_FORWARD", 2))
 DB_PATH = config["DB_PATH"]
 GEOIP_DB_PATH = config["GEOIP_DB_PATH"]
 ALLOWED_FROM_COUNTRY = config["ALLOWED_FROM_COUNTRY"]
+ALLOW_ALL_IP = config["ALLOW_ALL_IP"]
 MAX_BOOKINGS_PER_CLIENT = int(config["MAX_BOOKINGS_PER_CLIENT"])
 ADMIN_PASSWORD = config["ADMIN_PASSWORD"]
 APP_SECRET_KEY = config["APP_SECRET_KEY"]
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = APP_SECRET_KEY
@@ -38,6 +40,8 @@ def get_real_ip():
 
 
 def is_ip_from_country(ip=None, country_iso_code=ALLOWED_FROM_COUNTRY):
+    if ALLOW_ALL_IP:
+        return True
     if ip is None:
         ip = get_real_ip()
     if ip in ['127.0.0.1', 'localhost']:
