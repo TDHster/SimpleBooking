@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, make_response, abort, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.middleware.proxy_fix import ProxyFix
 import requests
 from dotenv import dotenv_values
 from datetime import datetime, timedelta
@@ -24,13 +25,22 @@ app.config['SECRET_KEY'] = APP_SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_PATH
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1)
+
 from models import db, Schedule, Booking
 db.init_app(app)
 
 reader = geoip2.database.Reader(GEOIP_DB_PATH)
 
-def is_ip_from_country(ip, country_iso_code=ALLOWED_FROM_COUNTRY):
-    if ip == '127.0.0.1' or ip == 'localhost':
+
+def get_real_ip():
+    return request.headers.get('X-Real-IP', request.headers.get('X-Forwarded-For', request.remote_addr))
+
+
+def is_ip_from_country(ip=None, country_iso_code=ALLOWED_FROM_COUNTRY):
+    if ip is None:
+        ip = get_real_ip()
+    if ip in ['127.0.0.1', 'localhost']:
         return True
     try:
         response = reader.country(ip)
